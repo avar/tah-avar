@@ -59,6 +59,10 @@ that have been modified in the last two weeks:
 
     osm-to-tilenumbers --zoom 12 --predicate '$lat > 66 and abs($sec_ago) < (60**2 * 24 * 14)' < Area.osm
 
+=item -s, --skip
+
+Skip the first B<n> tiles.
+
 =back
 
 =cut
@@ -69,6 +73,7 @@ Getopt::Long::Parser->new(
 	'h|help'   => \my $help,
     'z|zoom=i' => \(my $zoom = 12),
     'p|predicate=s'   => \my $predicate,
+    's|skip=i'        => \(my $skipnum = 0),
 ) or help();
 
 my $xml = XML::Parser->new(
@@ -88,7 +93,16 @@ if (not -t STDIN) {
     help();
 }
 
-print $_, "\n" for sort keys %tile;
+{
+    my $count = 0;
+    for my $key (sort keys %tile) {
+        if ($count++ < $skipnum) {
+            print "#$key\n";
+        } else {
+            print $key, "\n";
+        }
+    }
+}
 
 exit 0;
 
