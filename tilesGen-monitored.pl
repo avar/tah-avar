@@ -18,30 +18,36 @@ Getopt::Long::Parser->new(
 ) or help();
 
 my @tile;
-my $skip = shift;
+# Count how many tiles we skipped, if any
+my $skip = 0;
 
 while (<>) {
+    # Skip comments
+    if (/^#/) {
+        $skip += 1;
+        next;
+    }
+
     chomp;
     my ($x, $y) = split /[, ]/, $_;
     push @tile, [ $x, $y ];
 }
 
-for (my $i = 0; $i < @tile; $i++) {
-    if (defined $skip and $i < $skip) {
-        warn "Skipping up to $skip, this is $i";
-        next;
-    }
+if ($skip) {
+    print STDERR "Skipping $skip tiles\n";
+}
 
+for (my $i = 0; $i < @tile; $i++) {
     my ($x, $y) = @{ $tile[$i] };
 
-    my $cmd = "perl tilesGen.pl xy $x $y $zoom";
+    my $cmd = "$^X tilesGen.pl xy $x $y $zoom";
     my $tried = 0;
     my $tries = 100;
     my $sleep = 15;
     my $step  = 60;
     my $ret;
   again:
-    printf STDERR "Generating tile %d/%d ($x,$y)\n", $i, scalar @tile;
+    printf STDERR "Generating tile %d/%d ($x,$y)\n", ($i + 1 + $skip), (scalar(@tile) + $skip);
     $ret = system $cmd;
     if ($ret) {
         warn "$cmd attempt $tried/$tries (num: $i) failed, sleeping $sleep and trying again";
@@ -55,5 +61,5 @@ for (my $i = 0; $i < @tile; $i++) {
         }
     }
 
-    system "perl tilesGen.pl upload";
+    system "$^X tilesGen.pl upload";
 }
