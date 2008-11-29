@@ -21,7 +21,7 @@ my @tile;
 # Count how many tiles we skipped, if any
 my $skip = 0;
 
-while (<>) {
+while (<STDIN>) {
     # Skip comments
     if (/^#/) {
         $skip += 1;
@@ -40,7 +40,7 @@ if ($skip) {
 for (my $i = 0; $i < @tile; $i++) {
     my ($x, $y) = @{ $tile[$i] };
 
-    my $cmd = "$^X tilesGen.pl xy $x $y $zoom";
+    my $cmd = "$^X tilesGen.pl @ARGV xy $x $y $zoom";
     my $tried = 0;
     my $tries = 100;
     my $sleep = 15;
