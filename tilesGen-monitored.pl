@@ -15,6 +15,7 @@ Getopt::Long::Parser->new(
 )->getoptions(
 	'h|help'   => \my $help,
     'z|zoom=i' => \(my $zoom = 12),
+    'only-request' => \my $only_request,
 ) or help();
 
 my @tile;
@@ -46,6 +47,15 @@ for (my $i = 0; $i < @tile; $i++) {
     my $sleep = 15;
     my $step  = 60;
     my $ret;
+
+  request:
+    # This is required so that the server knows to stitch the tiles on
+    # lowzoom, we'll fulfill the request by the upload we do shortly
+    # afterwards. See '[Tilesathome] render a region' on the t@h
+    # mailing list
+    printf STDERR "Making request for ($x,$y) to tah server\n";
+    system "(wget -q 'http://server.tah.openstreetmap.org/Request/create/?x=$x&y=$y&priority=2' -O- && echo)";
+    next if $only_request;
   again:
     printf STDERR "Generating tile %d/%d ($x,$y)\n", ($i + 1 + $skip), (scalar(@tile) + $skip);
     $ret = system $cmd;
